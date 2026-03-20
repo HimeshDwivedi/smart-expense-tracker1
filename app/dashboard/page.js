@@ -2,7 +2,7 @@ import clientPromise from '@/lib/db';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { addExpense, deleteExpense } from '../actions';
-
+export const dynamic = 'force-dynamic';
 export default async function Dashboard() { 
   const cookieStore = await cookies();    
   const userId = cookieStore.get('userId')?.value;
