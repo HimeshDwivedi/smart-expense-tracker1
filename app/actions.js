@@ -24,9 +24,17 @@ export async function login(formData) {
     throw new Error("Invalid password");
   }
 
-  const cookieStore = await cookies();
-  cookieStore.set('userId', user._id.toString(), { httpOnly: true });
-  redirect('/dashboard');
+ 
+const cookieStore = await cookies(); 
+  
+ 
+  cookieStore.set('userId', user._id.toString(), { 
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24 * 7 
+  });
+
+  redirect('/dashboard')
 }
 
 export async function addExpense(formData) {

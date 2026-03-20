@@ -7,6 +7,7 @@ export default function LandingPage() {
         <h1 className="text-3xl font-extrabold mb-2 text-slate-800 text-center">WalletWise</h1>
         <p className="text-slate-500 text-center mb-8">Login to track your expenses</p>
         
+        {}
         <form action={login} className="space-y-4">
           <input 
             name="username" 

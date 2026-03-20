@@ -3,8 +3,8 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { addExpense, deleteExpense } from '../actions';
 
-export default async function Dashboard() {
-  const cookieStore = await cookies();
+export default async function Dashboard() { 
+  const cookieStore = await cookies();    
   const userId = cookieStore.get('userId')?.value;
   if (!userId) redirect('/');
 
