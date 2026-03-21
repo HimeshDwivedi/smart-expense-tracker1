@@ -3,12 +3,12 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { addExpense, deleteExpense } from '../actions';
 export const dynamic = 'force-dynamic';
+
 export default async function Dashboard() { 
   const cookieStore = await cookies();    
   const userId = cookieStore.get('userId')?.value;
   if (!userId) redirect('/');
 
-  // Fetch data from MongoDB
   const client = await clientPromise;
   const rawExpenses = await client
     .db("expenseTracker")
@@ -17,16 +17,26 @@ export default async function Dashboard() {
     .sort({ createdAt: -1 })
     .toArray();
 
-  // Monthly/Weekly Logic
+  // ✅ Serialize MongoDB objects
+  const expenses = rawExpenses.map(e => ({
+    ...e,
+    _id: e._id.toString(),
+    createdAt: e.createdAt.toISOString(),
+  }));
+
   const now = new Date();
   const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-  const monthlyTotal = rawExpenses
-    .filter(e => e.createdAt.getMonth() === now.getMonth())
+  // ✅ Using serialized expenses + year check fix
+  const monthlyTotal = expenses
+    .filter(e => 
+      new Date(e.createdAt).getMonth() === now.getMonth() &&
+      new Date(e.createdAt).getFullYear() === now.getFullYear()
+    )
     .reduce((acc, curr) => acc + curr.amount, 0);
 
-  const weeklyTotal = rawExpenses
-    .filter(e => e.createdAt >= oneWeekAgo)
+  const weeklyTotal = expenses
+    .filter(e => new Date(e.createdAt) >= oneWeekAgo)
     .reduce((acc, curr) => acc + curr.amount, 0);
 
   return (
@@ -60,20 +70,18 @@ export default async function Dashboard() {
 
         {/* List with Delete Button */}
         <div className="space-y-3">
-          {rawExpenses.map((e) => (
-            <div key={e._id.toString()} className="flex justify-between items-center p-4 border rounded-xl hover:bg-slate-50">
+          {expenses.map((e) => (
+            <div key={e._id} className="flex justify-between items-center p-4 border rounded-xl hover:bg-slate-50">
               <div>
                 <p className="font-bold">{e.category}</p>
-                <p className="text-xs text-slate-400">{e.createdAt.toLocaleString()}</p>
+                <p className="text-xs text-slate-400">{new Date(e.createdAt).toLocaleString()}</p>
               </div>
               <div className="flex items-center gap-4">
                 <span className="font-bold text-red-500">-${e.amount.toFixed(2)}</span>
                 
-                {/* DELETE BUTTON */}
-                <form action={async () => {
-                  'use server';
-                  await deleteExpense(e._id.toString());
-                }}>
+                {/* ✅ Fixed delete - using hidden input instead of closure */}
+                <form action={deleteExpense}>
+                  <input type="hidden" name="expenseId" value={e._id} />
                   <button className="text-slate-300 hover:text-red-600 text-sm">Delete</button>
                 </form>
               </div>

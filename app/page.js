@@ -1,5 +1,6 @@
 import { login } from './actions';
 export const dynamic = 'force-dynamic';
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -7,7 +8,6 @@ export default function LandingPage() {
         <h1 className="text-3xl font-extrabold mb-2 text-slate-800 text-center">WalletWise</h1>
         <p className="text-slate-500 text-center mb-8">Login to track your expenses</p>
         
-        {}
         <form action={login} className="space-y-4">
           <input 
             name="username" 

@@ -24,17 +24,14 @@ export async function login(formData) {
     throw new Error("Invalid password");
   }
 
- 
-const cookieStore = await cookies(); 
-  
- 
+  const cookieStore = await cookies(); 
   cookieStore.set('userId', user._id.toString(), { 
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     maxAge: 60 * 60 * 24 * 7 
   });
 
-  redirect('/dashboard')
+  redirect('/dashboard');
 }
 
 export async function addExpense(formData) {
@@ -53,9 +50,14 @@ export async function addExpense(formData) {
   redirect('/dashboard');
 }
 
-// NEW: Delete Function
-export async function deleteExpense(expenseId) {
+// ✅ Fixed - now accepts formData instead of plain string
+export async function deleteExpense(formData) {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get('userId')?.value;
+  if (!userId) redirect('/');
+
+  const expenseId = formData.get('expenseId');
   const expenses = await getCollection("expenses");
-  await expenses.deleteOne({ _id: new ObjectId(expenseId) });
+  await expenses.deleteOne({ _id: new ObjectId(expenseId), userId }); // ✅ scoped to user
   redirect('/dashboard');
 }
